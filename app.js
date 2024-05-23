@@ -1,22 +1,23 @@
-const usuariolist = document.querySelector('.lista-usuarios');
-const addUsuario = document.querySelector('.add-usuario-form');
-const nomeValue = document.getElementById('nome-value');
-const celularValue = document.getElementById('celular-value');
-const fotoValue = document.getElementById('foto-value');
-const emailValue = document.getElementById('email-value');
-const enderecoValue = document.getElementById('endereco-value');
-const cidadeValue = document.getElementById('cidade-value');
-const btnSubmit = document.querySelector('.btn');
+const usuariolist = document.querySelector('.lista-usuarios')
+const addUsuario = document.querySelector('.add-usuario-form')
+const nomeValue = document.getElementById('nome-value')
+const celularValue = document.getElementById('celular-value')
+const fotoValue = document.getElementById('foto-value')
+const emailValue = document.getElementById('email-value')
+const enderecoValue = document.getElementById('endereco-value')
+const cidadeValue = document.getElementById('cidade-value')
+const btnSubmit = document.getElementById('adicionar')
+const btnUpdate = document.getElementById('atualizar')
 
-let output = '';
+let output = ''
 
 const renderUsuario = (usuario) => {
-
+    output = ''
     usuario.forEach(usuario => {
         output += `
-        <div class="card" style="width: 18rem;">
+        <div class="card" style="width: 18rem">
             <img class="card-img-top" src="${usuario.foto}" alt="icone">
-            <div class="card-body" data.id=${usuario._id}>
+            <div class="card-body" data-id=${usuario.id}>
               <h5 class="card-title">${usuario.nome}</h5>
                 <p class="card-subtitle">${usuario.celular}</p>
                 <p class="card-subtitle">${usuario.email}</p>
@@ -26,13 +27,12 @@ const renderUsuario = (usuario) => {
                 <a href="#" class="card-link" id="deletar-usuario">Deletar</a>
             </div>
         </div>
-        `;
-    });
-    usuariolist.innerHTML = output;
-    
+        `
+    })
+    usuariolist.innerHTML = output
 }
 
-const url = 'https://bakcend-fecaf-render.onrender.com/contatos';
+const url = 'http://localhost:8080/contatos'
 
 // Mostrar - ver lista de usuários
 // método: GET
@@ -42,21 +42,18 @@ fetch(url)
     .then(data => renderUsuario(data))
 
 usuariolist.addEventListener('click', (e) => {
-    e.preventDefault();
-    let botaoDeletarSelecionado = e.target.id == 'deletar-usuario';
-    let botaoEditarSelecionado = e.target.id == 'editar-usuario';
+    e.preventDefault()
+    let botaoDeletarSelecionado = e.target.id == 'deletar-usuario'
+    let botaoEditarSelecionado = e.target.id == 'editar-usuario'
 
-    let id = e.target.parentElement.dataset.id;
-
-    // Deletar - remover usuário criado
-    // método: DELETE
-
+    let id = e.target.parentElement.dataset.id
+    
     if(botaoDeletarSelecionado) {
         fetch(`${url}/${id}`, {
             method: 'DELETE',
         } )
         .then(res => res.json())
-        // .then(() => location.reload()
+        .then(() => location.reload())
     }
 
     if(botaoEditarSelecionado) {
@@ -72,26 +69,45 @@ usuariolist.addEventListener('click', (e) => {
         emailValue.value = emailContent;
         enderecoValue.value = enderecoContent;
         cidadeValue.value = cidadeContent;
-        
+
+        btnUpdate.style.display = 'flex'
     }
-
+    
     // Atualizar - atualizar infos novas
-    // método: PATCH
+    // método: PUT
 
-    btnSubmit.addEventListener('click', () => {
+    btnUpdate.addEventListener('click', () => {
+        const urlUpdate = `http://localhost:8080/contatos/${id}`
+        const options = {
+            method: 'PUT',
+            headers: {
+                'Content-type': 'application/json'
+            },
+            
+            body: JSON.stringify({
+                nome: nomeValue.value,
+                celular: celularValue.value,
+                email: emailValue.value,
+                endereco: enderecoValue.value,
+                cidade: cidadeValue.value
+            })
 
+        }
+
+        fetch(urlUpdate, options)
+            .then(response => response.json())
+            .then(() => {
+                location.reload()
+            })
+            .catch(error => console.error('Error:', error))
     })
-
-
-
-});
+})
 
 // Criar - Inserir novos usuários
 // método: POST
 
 addUsuario.addEventListener('submit', (e) => {
-    e.preventDefault();
-
+    e.preventDefault()
 
     fetch(url, {
         method: 'POST',
@@ -110,9 +126,9 @@ addUsuario.addEventListener('submit', (e) => {
 
     .then(res => res.json())
     .then(data => {
-        const dataArray = [];
-        dataArray.push(data);
-        renderUsuario(dataArray);
+        const dataArray = []
+        dataArray.push(data)
+        renderUsuario(dataArray)
     })
-
+    .catch(error => console.error('Error:', error))
 })
